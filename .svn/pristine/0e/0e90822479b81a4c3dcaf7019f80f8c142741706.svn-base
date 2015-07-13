@@ -1,0 +1,162 @@
+package model;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Observable;
+
+import test.ObserverableTest;
+import controller.FileWriter;
+
+/**
+ * This class representations a review, containing both the questions and answers, and other related information.. 
+ * @author Alex, Janelle
+ *
+ * Contributors: Harmeet
+ */
+public class Review extends Observable implements Serializable{
+	private static final long serialVersionUID = -7076035396457446081L;
+	private List<String> questions;
+	private List<String> answers; // Do we still need this?
+	private Map<String, String> questionAnswer;
+	private int recommendation;
+	private Paper p;
+	
+	/**
+	 * Constructor for Review class.
+	 */
+	public Review(){
+		questions = new ArrayList<String>();
+		answers = new ArrayList<String>();
+		questionAnswer = new HashMap<String, String>();
+		createQuestions();
+	}
+	
+	/**
+	 * Creates the questions.
+	 */
+	private void createQuestions() {
+		questions.add("1) Can the content be directly applied by classroom instructors or curriculum designers? \n" +
+"[5] Directly and obviously applicable. [1] Not applicable to classroom instruction or curriculum design.");
+		questions.add("2) Does the work appeal to a broad readership interested in engineering education or is it narrowly specialized? \n" + 
+"[5] Broad. [1] Narrow");
+		questions.add("3) Does the work address a significant problem? \n" + 
+"[5] Significant. [1] Insignificant");
+		questions.add("4) Does the author build upon relevant references and bodies of knowledge? \n" +
+"[5] Relevant and sufficient references to existing bodies of knowledge. [1] Few if any relevant references");
+		questions.add("5) If a teaching intervention is reported, is it adequately evaluated in terms of its impact on learning in actual use \n" +
+"[5] Excellent evaluation. [1] Inadequate evaluation");
+		questions.add("6) Does the author use methods appropriate to the goals, both for the instructional intervention and the evaluation of impact on learning? \n" +
+"[5] Appropriate methods. [1] Inappropriate or unclear methods");
+		questions.add("7) Did the author provide sufficient detail to replicate and evaluate?\n" +
+"[5] Sufficient detail. [1] Insufficient detail");
+		questions.add("8) Is the paper clearly and carefully written? \n" +
+"[5] excellent [4] very good [3] acceptable [2] weak [1] unacceptable");
+		questions.add("9) Does the paper adhere to accepted standards of style, usage, and composition? \n" + 
+"[5] excellent [4] very good [3] acceptable [2] weak [1] unacceptable");
+		questions.add("Summary Rating \n" + 
+"[5] strong accept [4] accept [3] neutral [2] reject [1] strong reject");
+		questions.add("Summary Comments");
+		
+	}
+	
+	/**
+	 * @return List of questions.
+	 */
+	public List<String> getQuestions() {
+		return questions;
+	}
+	
+	/**
+	 * @return List of answers.
+	 */
+	public List<String> getAnswers() {
+		return answers;
+	}
+	
+//	public void setAnswer(String answer) {
+//		answers.add(answer);
+//	}
+	
+	/**
+	 * @return the recommendation.
+	 */
+	public int getRecommendation() {
+		return recommendation;
+	}
+	
+	/**
+	 * Sets the recommendation for the review
+	 * @param i - the recommendation. Should be 1-5.
+	 */
+	public void setRecommendation(final int i) {
+		if (i < 1 || i > 5) {
+			throw new IllegalArgumentException("Invalid recommendation.");
+		}
+		
+		recommendation = i;
+	}
+	
+	/**
+	 * Adds an answer.
+	 * @param theQuestion - the question being answered.
+	 * @param theAnswer - the answer
+	 */
+	public void addAnswer(final String theQuestion, final String theAnswer) {
+		questionAnswer.put(theQuestion, theAnswer);
+	}
+
+	/**
+	 * Submits a review.
+	 * @param u - the user submitting the review.
+	 * @param p - the paper being reviewed.
+	 */
+	public void sumbitReview(final User u, final Paper p) {
+		//File review = new File();
+		this.p = p;
+		try {
+			File review = new File("review_" + u.getUserName() + ".txt");
+
+//			try {
+//				review.createNewFile();
+//				System.out.println("Creating file");
+//			} catch (IOException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
+//			
+			PrintWriter writer = new PrintWriter(review);
+			for(String q : questions) {
+				writer.println(q + "***" + questionAnswer.get(q) + "\n");
+			}
+			writer.close();
+			FileWriter.writeReviewFile(review, u, p);
+			review.delete();
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		update();
+		//FileWriter.writeReviewFile(file, user, paper);
+	}
+	
+	/**
+	 * Gets a map of questions to answers.
+	 * @return - the map of questions to answers.
+	 */
+	public Map<String, String> getQuestionAnswer() {
+		return questionAnswer;
+	}
+	public void update() {
+		setChanged();
+		notifyObservers(getSerializableFileName());
+	}
+	public String getSerializableFileName() {
+		return "R_" + p.getAuthor() + ".ser";
+	}
+}

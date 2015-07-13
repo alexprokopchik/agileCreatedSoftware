@@ -1,0 +1,152 @@
+package model;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Observable;
+
+/**
+ * User class represents a persons interaction for a single conference, 
+ * with their roles and papers associated with it. If a person is part of multiple conferences,
+ * they will have multiple User objects.
+ * 
+ * @author Owen Meaker
+ *
+ * Contributors: Janelle, Harmeet
+ */
+public class User extends Observable implements Serializable{
+
+	private static final long serialVersionUID = -303337422000554546L;
+	public static final int AUTHOR = 1; // 0001
+	public static final int REVIEWER = 2; // 0010
+	public static final int SUBPROGRAM_CHAIR = 4; // 0100
+	public static final int PROGRAM_CHAIR = 8; // 1000
+
+	private int permissions;
+	private String userName;
+	private ArrayList<Paper> papers;
+	private Conference conference;
+
+	/**
+	 * Creates a new user.
+	 * @param username - the username.
+	 * @param permission - the permissions.
+	 * @param con - the conference.
+	 */
+	public User(final String username, final int permission, final Conference con) {
+		if (permission < 0) {
+			throw new IllegalArgumentException("permission must be non-negative!");
+		}
+
+		permissions = permission;
+		this.userName = username;
+		papers = new ArrayList<Paper>();
+		conference = con;
+	}
+
+	/**
+	 * Gets the permissions.
+	 * @return the permissions.
+	 */
+	public int getPermissions() {
+		return permissions;
+	}
+
+	/**
+	 * sets the permissions.
+	 * @param newPermissions - the permissions to set.
+	 */
+	public void setPermssions(final int newPermissions) {
+		System.out.println("Updating permissions for " + userName + " from " + permissions + " to " + newPermissions);
+		permissions = newPermissions;
+		update();
+	}
+
+	/**
+	 * Gets the username.
+	 * @return the username.
+	 */
+	public String getUserName() {
+		return userName;
+	}
+
+	/**
+	 * Adds a paper.
+	 * @param paper - the paper to add.
+	 */
+	public void addPaper(Paper paper) {
+		if (paper.getConference().getConferenceId() != conference.getConferenceId()) {
+			throw new IllegalArgumentException("Paper belongs in different Conference!");
+		}
+
+		System.out.println("Paper Added!");
+		if(papers.contains(paper)) {
+			papers.add(papers.indexOf(paper), paper); // replaces paper
+		} else {
+			papers.add(paper);
+		}
+		update();
+	}
+
+	/**
+	 * Removes a paper.
+	 * @param paper - the paper to remove.
+	 * @return whether the remove was successful.
+	 */
+	public boolean removePaper(Paper paper) {
+		boolean b = papers.remove(paper);
+		update();
+		return b;
+	}
+
+	/**
+	 * Gets the conference.
+	 * @return the conference.
+	 */
+	public Conference getConference() {
+		return conference;
+	}
+
+	/**
+	 * Gets the list of papers.
+	 * @return the list of papers.
+	 */
+	public ArrayList<Paper> getPaper(){
+		return papers;
+	}
+
+	/**
+	 * Changes the permssion.
+	 * @param otherUser - the user trying to change the permissions.
+	 * @param newPermmison - the new permissions to have.
+	 * @throws Exception - if the user does not have the correct qualifications to change the permission.
+	 */
+	public void changePermission(final User otherUser, final int newPermmison) throws Exception {
+		// Bitwise and. If the leftmost bit is 1, then it will accept.
+		if((this.permissions & PROGRAM_CHAIR) == 8) {
+			// TODO: other checks
+			otherUser.permissions = newPermmison;
+		} else if((this.permissions & SUBPROGRAM_CHAIR) == 4){
+			// TODO: other checks
+			otherUser.permissions = newPermmison; 
+		} else {
+			throw new Exception("Invalid Permissions!");
+		}
+		update();
+	}
+
+	/**
+	 * Notifies observers.
+	 */
+	public void update() {
+		setChanged();
+		notifyObservers(getFileSerialName());
+	}
+
+	/**
+	 * Gets the name for the serialized version of this file.
+	 * @return the serialized file name.
+	 */
+	public String getFileSerialName() {
+		return "U_" + userName + conference.getConferenceId() + ".ser";
+	}
+}

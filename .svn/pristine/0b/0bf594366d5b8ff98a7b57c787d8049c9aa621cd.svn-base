@@ -1,0 +1,40 @@
+Steps for a test to follow to ensure this application is doing what it's supposed to do.
+
+Test Conference					PNWCSE
+Program Chair 					DDemetris@ebay.com
+SubProgram Chair 				LutherG@spansion.com
+Reviewer						RobertLewis@google.com
+Author							Arthur_Church@google.com
+
+->Sign in as author Arthur_Church@google.com for conference PNWCSE.
+
+	-> Submit Paper.
+
+->Run the app again and sign in as Program Chair DDemetris@ebay.com for conference PNWCSE
+	-> You can view the papers submitted to the this conference.
+	-> Assign SubProgram chair LutherG@spansion.com to the Paper.
+
+->Rerun the app and sign in as SPC LutherG@spansion.com for conference PNWCSE.
+	-> You can view the paper assigned to the SubProgram Chair by the Program chair.
+	-> You can assign reviewers to the paper. Assign reviewer RobertLewis@google.com to the paper.
+	
+->Rerun the app and sign in as Reviewer RobertLewis@google.com for conference PNWCSE.
+	-> You can view the paper assigned to the reviewer by the Subprogram Chair.
+	-> Click submit review. Fill in the review and submit the review.
+	
+->Rerun app and sign in as SPC LutherG@spansion.com for conference PNWCSE.
+	-> Click on Reviews to view the review. Click Submit recommendation. Fill information and submit recommendation.
+
+->Run the app again and sign in as Program Chair DDemetris@ebay.com for conference PNWCSE.
+	-> Click on Reviews button to view the reviews and click on Recommendation to view the recommendation from Subprogram Chair.
+	-> Click on Accept/Reject, Choose Accept or reject and Enter comments (Comments is optional). And click submit.
+	
+->Rerun the app and Sign in as author Arthur_Church@google.com for conference PNWCSE.
+	-> you can view the status updated and if you click on status which appears as either 
+	-> accept or reject. and you will be able to view the Reviews, Recommendation and comment from the Program Chair.
+	
+	
+
+>>>>>>>>>>>>>This Concludes a single test<<<<<<<<<<<<<<<<<<<<<<<<
+	
+

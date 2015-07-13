@@ -1,0 +1,194 @@
+package view;
+
+import java.awt.BorderLayout;
+import java.awt.Desktop;
+import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
+
+import javax.swing.ButtonGroup;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+
+import model.Paper;
+import model.Review;
+import model.User;
+
+import javax.swing.SwingConstants;
+
+import controller.SerializableController;
+
+import java.awt.Color;
+
+/**
+ * Used by FinalReviewPanel, lists all the papers the reviewer is assigned to.
+ * 
+ * @author Harmeet Singh
+ * 
+ */
+@SuppressWarnings("serial")
+public class ReviewerPaperPanel extends JPanel {
+
+	private static final Dimension SIZE = new Dimension(100, 26);
+	private static String REGEX = "[.][^.]+$"; // replaces the extension of a file. Found at StackOverflow question 924394
+	private static SerializableController sc = new SerializableController();
+	private FinalReviewPanel parentPanel;
+	private Paper paper;
+	private User user;
+	private JButton viewPaperButton;
+	private JButton submitReview;
+	private JLabel status;
+
+	public ReviewerPaperPanel(FinalReviewPanel finalReviewPanel, User u, Paper p) {
+		super();
+		setOpaque(false);
+		parentPanel = finalReviewPanel;
+		user = u;
+		paper = p;
+		viewPaperButton = new JButton("View Paper");
+		submitReview = new JButton("Submit Review");
+		status = new JLabel();
+
+		JLabel title = new JLabel();
+		title.setForeground(Color.YELLOW);
+		title.setHorizontalTextPosition(SwingConstants.CENTER);
+		title.setHorizontalAlignment(SwingConstants.CENTER);
+		title.setPreferredSize(SIZE);
+		title.setText(p.getTitle());
+
+		JLabel conf = new JLabel();
+		conf.setForeground(Color.YELLOW);
+		conf.setHorizontalTextPosition(SwingConstants.CENTER);
+		conf.setHorizontalAlignment(SwingConstants.CENTER);
+		conf.setPreferredSize(SIZE);
+		conf.setText(p.getConference().getConferenceTitle());
+		
+		status.setForeground(Color.YELLOW);
+		status.setHorizontalTextPosition(SwingConstants.CENTER);
+		status.setHorizontalAlignment(SwingConstants.CENTER);
+		status.setPreferredSize(SIZE);
+		
+		viewPaperButton.setPreferredSize(new Dimension(100, 26));
+		submitReview.setPreferredSize(new Dimension(150, 26));
+		
+		checkStatus();
+
+		addListeners();
+
+		this.add(title);
+		this.add(conf);
+		this.add(status);
+		this.add(viewPaperButton);
+		this.add(submitReview);
+
+		this.setPreferredSize(new Dimension(650, 50));
+		this.setMaximumSize(new Dimension(650, 50));
+	}
+
+	private void checkStatus() {
+		String result = "";
+		String fileNameNoExt = paper.getPaper().getName().replaceFirst(REGEX, "");
+		File r = new File("papers\\" + String.valueOf((user.getConference().getConferenceId())) 
+				+ "\\" + paper.getAuthor() + "\\" + fileNameNoExt + "\\reviews\\review_" + user.getUserName() + ".txt"); 
+		 
+		if (r.exists()) {
+			result = "Reviewed";
+		}
+		else {
+			result = "Not Reviewed";
+		}
+		status.setText(result);
+	}
+
+	private void addListeners() {
+		viewPaperButton.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				viewPaper();
+			}
+		});
+
+		submitReview.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				JOptionPane.showMessageDialog(parentPanel, "Please answer all the questions before selecting file.");
+				submitReview();
+			}
+		});
+	}
+
+	private void submitReview() {
+
+		final JFrame reviewFrame = new JFrame("Review");
+		Review review = new Review();
+		final ReviewPanel reviewPanel = new ReviewPanel(review);
+		JPanel tempOuter = new JPanel(new BorderLayout());
+		
+		tempOuter.add(reviewPanel);
+		JButton sumbitButton = new JButton("Submit Review");
+		sumbitButton.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				Review r = reviewPanel.getReview();
+				
+				List<String> questionList = reviewPanel.getQuestions();
+				List<ButtonGroup> a = reviewPanel.getButtonGroups();
+				// System.out.println("Number of Q = "+ q.size() +
+				// "\nNumber of A = " + a.size());
+				int i = 0;
+				for (String question : questionList) {
+					if (!question.equals("Summary Comments")) {
+						ButtonGroup currentA = a.get(i);
+						String thing = currentA.getSelection().getActionCommand();
+						
+						r.addAnswer(question, thing);
+						i++;
+					} else {
+						String summary = reviewPanel.getAnswerText().getText();
+						// System.out.println("Question is \n " + s
+						// +"\nAnswer = "+ summary);
+						r.addAnswer(question, summary);
+					}
+				}
+				// System.out.println(r.getQuestionAnswer());
+				user.addPaper(paper);
+				user.getConference().addPaper(paper);
+				r.sumbitReview(user, paper);
+				
+				reviewFrame.dispose();
+				checkStatus();
+			}
+		});
+
+		tempOuter.add(sumbitButton, BorderLayout.SOUTH);
+		reviewFrame.getContentPane().add(tempOuter);
+//		reviewFrame.pack();
+		reviewFrame.setExtendedState(java.awt.Frame.MAXIMIZED_BOTH);
+		reviewFrame.setMinimumSize(new Dimension(400, 500));
+		reviewFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		reviewFrame.setVisible(true);
+
+	}
+
+	private void viewPaper() {
+		File path = paper.getPaper();
+		Desktop desktoptool = Desktop.getDesktop();
+
+		try {
+			desktoptool.open(path);
+		} catch (IOException e) {
+			e.printStackTrace();
+			JOptionPane.showMessageDialog(this, "Error Viewing the File");
+		}
+	}
+}

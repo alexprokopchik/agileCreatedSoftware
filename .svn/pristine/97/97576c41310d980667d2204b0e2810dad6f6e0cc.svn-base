@@ -1,0 +1,113 @@
+package view;
+
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
+
+import javax.swing.ButtonGroup;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
+import javax.swing.JTextArea;
+
+import controller.FileWriter;
+import model.Conference;
+import model.Paper;
+import model.User;
+
+/**
+ * This is the acceptance panel for the program chair to have the ability to accept or reject a panel.
+ * 
+ * @author Janelle
+ *
+ */
+public class AcceptancePanel extends JPanel{
+	private JFrame frame;
+	private Paper paper;
+	private User user;
+	private JTextArea rationale;
+	private ButtonGroup bg;
+	/**
+	 * The constructor for the Acceptance Panel
+	 * 
+	 * @param theFrame The Frame for which the acceptance panel is added to
+	 * @param u The User
+	 * @param p The Paper
+	 */
+	public AcceptancePanel(JFrame theFrame, User u, Paper p) {
+		super(new BorderLayout());
+		frame = theFrame;
+		user = u;
+		paper = p;
+		//just for testing
+		Conference c = new Conference();
+		c.setConferenceId(1);
+		user = new User("asdf", 8, c);
+		paper = new Paper(new File("papers\\1\\asdf\\9.94r.txt"), user.getUserName(), c);
+		initialize();
+		
+	}
+	
+	/**
+	 * This method initializes the view of the panel adding the radio buttons and other required text.
+	 */
+	private void initialize() {
+		JPanel AR = new JPanel(new GridLayout(0,2,5,5));
+		AR.setBackground(Color.BLUE);
+		JTextArea txtQ = new JTextArea("Accept or Reject?");
+		txtQ.setEditable(false);
+		txtQ.setBackground(getBackground());
+		AR.add(txtQ);
+		
+		JPanel buttonPanel = new JPanel();
+		bg = new ButtonGroup();
+		JRadioButton accept = new JRadioButton("Accept");
+		JRadioButton reject = new JRadioButton("Reject");
+		accept.setActionCommand("Accept");
+		reject.setActionCommand("Reject");
+		bg.add(accept);
+		bg.add(reject);
+		buttonPanel.add(accept);
+		buttonPanel.add(reject);
+		AR.add(buttonPanel);
+		this.add(AR, BorderLayout.NORTH);
+		
+		rationale = new JTextArea("Please explain why you made this choice");
+		this.add(rationale);
+		JButton submit = new JButton("Submit");
+		submit.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				submit();
+			}
+		});
+		this.add(submit, BorderLayout.SOUTH);
+	}
+	
+	/**
+	 * This action for what the submit button within the Accept/Reject panel performs.
+	 */
+	private void submit(){
+		//paper.setStatus(bg.getSelection().getActionCommand());
+		File f = new File("acceptance.txt");
+		try {
+			PrintWriter writer = new PrintWriter(f);
+			writer.println(bg.getSelection().getActionCommand() + "\n");
+			writer.println(rationale.getText()); // doesn't do new lines 
+			writer.close();
+			FileWriter.writeAcceptanceFile(f, user, paper);
+			frame.dispose();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		
+	}
+}

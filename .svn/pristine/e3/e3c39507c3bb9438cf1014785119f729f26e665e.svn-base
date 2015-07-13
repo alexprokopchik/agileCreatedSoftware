@@ -1,0 +1,258 @@
+package view;
+
+import java.awt.BorderLayout;
+import java.awt.Desktop;
+import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.IOException;
+import java.util.Collection;
+import java.util.List;
+
+import javax.swing.JButton;
+import javax.swing.JFileChooser;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.SwingConstants;
+
+import controller.SerializableController;
+import model.AccountDatabase;
+import model.Conference;
+import model.ConferenceDatabase;
+import model.Paper;
+import model.Recommendation;
+import model.Review;
+import model.User;
+
+import java.awt.Color;
+
+/**
+ * Used by subprogram chair, lists all the papers the subprogram is assigned to.
+ * 
+ * @author Harmeet Singh
+ * 
+ */
+public class SubprogramPaperPanel extends JPanel {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 914570560281249544L;
+	private static final Dimension SIZE = new Dimension(100, 26);
+	private SubprogramChairPanel parentPanel;
+	private Paper paper;
+	private User user;
+	private JButton viewPaperButton;
+	private JButton submitRecom;
+	private AccountDatabase actDB;
+	private ConferenceDatabase conDB;
+	private Conference c;
+
+	public SubprogramPaperPanel(SubprogramChairPanel panel, User u, Paper p,
+			AccountDatabase theActDB, final ConferenceDatabase theConDB) {
+		super();
+		setOpaque(false);
+		parentPanel = panel;
+		user = u;
+		paper = p;
+		actDB = theActDB;
+		conDB = theConDB;
+		c = conDB.getConferences().get(u.getConference().getConferenceId());
+		viewPaperButton = new JButton("View Paper");
+		submitRecom = new JButton("Submit Recommendation");
+		JButton viewReview = new JButton("View Review");
+		viewReview.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				List<Review> reviewList = paper.getReviews();
+				for (int a = 0; a < reviewList.size(); a++) {
+					Review eachReview = reviewList.get(a);
+
+				}
+
+			}
+		});
+		JButton assignReviewers = new JButton("Assign Reviewers");
+		if (paper.getReviewers().size() < 4) {
+			assignReviewers.setEnabled(true);
+		} else {
+			assignReviewers.setEnabled(false);
+		}
+		assignReviewers.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+//				Collection<Paper> papers = c.getPapers();
+//				Object possible[] = new Object[papers.size()];
+//				int i = 0;
+//				for (Paper p : papers) {
+//					System.out.println(p.getTitle() + " has "
+//							+ p.getReviewers().size() + " reviewers");
+//					if (p.getReviewers().size() < 4) {
+//						possible[i] = p.getTitle();
+//						i++;
+//					}
+//				}
+//				Object choice = JOptionPane.showInputDialog(null,
+//						"Choose Paper", "Paper", JOptionPane.PLAIN_MESSAGE,
+//						null, possible, 0);
+//				System.out.println(choice);
+//				Paper thePaper = null;
+//				for (Paper p : papers) {
+//					if (p.getTitle().equals(choice)) {
+//						thePaper = p;
+//						break;
+//					}
+//				}
+				List<User> reviewer = c.getReviewers();
+				Object[] rev = new Object[reviewer.size()];
+				int i = 0;
+				for (User u : reviewer) {
+					if (!paper.getAuthor().equals(u.getUserName())) {
+						rev[i] = u.getUserName();
+						i++;
+					}
+				}
+				Object theR = JOptionPane.showInputDialog(null,
+						"Choose a reviewer for this paper",
+						"Reviewer for Paper", JOptionPane.PLAIN_MESSAGE, null,
+						rev, 0);
+//				System.out.println(theR);
+				User revU = actDB.getAccounts().get(theR)
+						.getUserConfId(c.getConferenceId());
+				revU.addObserver(new SerializableController());
+				paper.addReviewer(revU);
+				revU.addPaper(paper); // adding for review
+				actDB.add(actDB.getAccounts().get(revU.getUserName()));
+				actDB.update();
+				conDB.update();
+				parentPanel.update();
+			}
+		});
+
+		JLabel title = new JLabel();
+		title.setForeground(Color.YELLOW);
+		title.setHorizontalTextPosition(SwingConstants.CENTER);
+		title.setHorizontalAlignment(SwingConstants.CENTER);
+		title.setPreferredSize(new Dimension(120, 26));
+		title.setText(p.getTitle());
+
+		JLabel author = new JLabel();
+		author.setForeground(Color.YELLOW);
+		author.setHorizontalTextPosition(SwingConstants.CENTER);
+		author.setHorizontalAlignment(SwingConstants.CENTER);
+		author.setPreferredSize(SIZE);
+		author.setText(p.getAuthor());
+
+		JButton reviewer = new JButton();
+		reviewer.setHorizontalTextPosition(SwingConstants.CENTER);
+		reviewer.setHorizontalAlignment(SwingConstants.CENTER);
+		reviewer.setPreferredSize(SIZE);
+		reviewer.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				List<User> val = paper.getReviewers();
+				StringBuilder string = new StringBuilder("");
+				for (User u : val) {
+					string.append(u.getUserName());
+					string.append(System.getProperty("line.separator"));
+				}
+				JOptionPane.showMessageDialog(null,
+						string.toString());
+				
+			}
+		});
+		
+		reviewer.setForeground(Color.YELLOW);
+		reviewer.setHorizontalTextPosition(SwingConstants.CENTER);
+		reviewer.setHorizontalAlignment(SwingConstants.CENTER);
+		
+		JLabel status = new JLabel();
+		status.setForeground(Color.YELLOW);
+		status.setHorizontalTextPosition(SwingConstants.CENTER);
+		status.setHorizontalAlignment(SwingConstants.CENTER);
+		status.setPreferredSize(SIZE);
+		status.setText(paper.getReviews().size() + " Reviews");
+		
+
+		addListeners();
+
+		this.add(title);
+		this.add(author);
+		this.add(reviewer);
+		this.add(status);
+		this.add(viewPaperButton);
+		this.add(viewReview);
+		this.add(submitRecom);
+		this.add(assignReviewers);
+
+		this.setPreferredSize(new Dimension(1100, 50));
+		this.setMaximumSize(new Dimension(1100, 50));
+	}
+
+	private void addListeners() {
+		viewPaperButton.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				viewPaper();
+			}
+		});
+
+		submitRecom.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				submitRecomm();
+			}
+		});
+	}
+
+	private void submitRecomm() {
+
+		final JFrame recommFrame = new JFrame("Recommendation");
+		Recommendation rec = new Recommendation();
+		if (paper.getRecommendation() != null) {
+			rec = paper.getRecommendation();
+		}
+		final RecommendationPanel recPanel = new RecommendationPanel(rec);
+		JPanel tempOuter = new JPanel(new BorderLayout());
+
+		tempOuter.add(recPanel);
+		JButton sumbitButton = new JButton("Submit Recommendation");
+		sumbitButton.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+					recPanel.sumbitRec(user, paper);
+					recommFrame.dispose();
+			}			
+		});
+
+		tempOuter.add(sumbitButton, BorderLayout.SOUTH);
+		recommFrame.getContentPane().add(tempOuter);
+		// reviewFrame.pack();
+		// reviewFrame.setExtendedState(java.awt.Frame.MAXIMIZED_BOTH);
+		recommFrame.setMinimumSize(new Dimension(400, 500));
+		recommFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		recommFrame.setVisible(true);
+
+	}
+
+	private void viewPaper() {
+		File path = paper.getPaper();
+		Desktop desktoptool = Desktop.getDesktop();
+
+		try {
+			desktoptool.open(path);
+		} catch (IOException e) {
+			e.printStackTrace();
+			JOptionPane.showMessageDialog(this, "Error Viewing the File");
+		}
+	}
+}

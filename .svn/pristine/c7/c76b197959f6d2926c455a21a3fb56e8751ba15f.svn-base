@@ -1,0 +1,55 @@
+package view;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.List;
+import java.util.Scanner;
+
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextPane;
+
+import model.Paper;
+import model.Review;
+import model.User;
+
+public class ViewReviewPanel extends JScrollPane {
+	private static String REGEX = "[.][^.]+$"; // replaces the extension of a file. Found at StackOverflow question 924394
+	private JPanel myPanel;
+	private Paper paper;
+	private User user; 
+	public ViewReviewPanel(User u, Paper p) {
+		super();
+		myPanel = new JPanel();
+		paper = p;
+		user = u;
+		List<User> reviewer = paper.getReviewers();
+		List<Review> reviews = paper.getReviews();
+		String fileNameNoExt = paper.getPaper().getName().replaceFirst(REGEX, "");
+		File r = new File("papers\\1\\asdf\\9.94r\\reviews\\review_asdf.txt"); // for test
+		//File r = new File("papers\\" + String.valueOf((user.getConference().getConferenceId())) + "\\" + paper.getAuthor() + "\\" + fileNameNoExt + "\\reviews\\review_" + user.getUserName() + ".txt"); 
+		StringBuilder str = new StringBuilder();
+		try {
+			Scanner scanner = new Scanner(r);
+			while(scanner.hasNext()) {
+				
+				str.append(scanner.nextLine() + "\n");
+			}
+			JTextPane text = new JTextPane();
+			text.setText(str.toString());
+			myPanel.add(text);
+			//this.add(myPanel);
+			System.out.println(str);
+			scanner.close();
+		} catch (FileNotFoundException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		//File rec = new File("papers\\1\\asdf\\9.94r\\reviews\\review_asdf.txt")
+		
+		this.setViewportView(myPanel);
+	}
+}

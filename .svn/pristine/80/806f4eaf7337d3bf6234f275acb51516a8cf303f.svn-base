@@ -1,0 +1,209 @@
+package model;
+
+import java.io.File;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Observable;
+/**
+ * This represents a Paper, containing the file and related information for it.
+ * @author Janelle Tin
+ *
+ * Contributors: Owen, Alex, Harmeet
+ */
+public class Paper extends Observable implements Serializable{
+	private static final long serialVersionUID = -3111636450028563404L;
+	private String author; 
+	private String title;
+	private String abstrct;
+	private String subProgramChair;
+	private File paper;
+	private List<User> reviewers;
+	private boolean acceptance;
+	private List<Review> reviews;
+	private Recommendation recommendation;
+	private Conference conference;
+	private String status = null;
+
+	/**
+	 * Creates a empty paper.
+	 */
+	public Paper() {
+		this(null, "", null);
+	}
+
+	/**
+	 * Creates a Paper.
+	 * @param thePaper - the file for the paper.
+	 * @param theAuthor - the author.
+	 * @param theConference - the conference to submit to.
+	 */
+	public Paper(File thePaper, String theAuthor, Conference theConference) {
+		author = theAuthor;
+		paper = thePaper;
+		conference = theConference;
+
+		reviewers = new ArrayList<User>();
+		acceptance = false;
+		reviews = new ArrayList<Review>();
+		recommendation = null; 
+		update();
+	}
+
+	/**
+	 * @return the author
+	 */
+	public String getAuthor() {
+		return author;
+	}
+
+	/**
+	 * @return the paper
+	 */
+	public File getPaper() {
+		return paper;
+	}
+
+	/**
+	 * @return the reviewers
+	 */
+	public List<User> getReviewers() {
+		return reviewers;
+	}
+
+	/**
+	 * @return the acceptance
+	 */
+	public boolean isAcceptance() {
+		return acceptance;
+	}
+
+	/**
+	 * @return the reviews
+	 */
+	public List<Review> getReviews() {
+		return reviews;
+	}
+
+	/**
+	 * @return the recommendation
+	 */
+	public Recommendation getRecommendation() {
+		return recommendation;
+	}
+
+	/**
+	 * @return the conference
+	 */
+	public Conference getConference() {
+		return conference;
+	}
+
+	public String getTitle() {
+		return title;
+	}
+
+	public String getAbstract() {
+		return abstrct;
+	}
+
+	public void setTitle(final String s) {
+		title = s;
+		System.out.println("Setting title to " + s);
+		update();
+	}
+
+	public void setAbstract(final String s) {
+		abstrct = s;
+		update();
+	}
+
+	/**
+	 * Add a reviews for a paper.
+	 * @param my_review- the review.
+	 */
+	public void addReviews(Review my_review) {
+		//TODO checks to add
+		reviews.add(my_review);
+		update();
+	}
+
+	/**
+	 * Removes a review for the paper.
+	 * @param my_review- the review.
+	 */
+	public void removeReviewer(Review my_review) {
+		reviews.remove(my_review);
+		update();
+	}
+
+
+	/**
+	 * Add a reviewer for a paper.
+	 * @param reviewer - the reviewer
+	 */
+	public void addReviewer(User reviewer) {
+		//TODO checks to add
+		if(reviewers.contains(reviewer)) {
+			System.out.println("This paper already has this user as a reviewer.");
+		} else {
+			reviewers.add(reviewer);
+			update();
+		}
+	}
+
+	/**
+	 * Removes a reviewer for the paper.
+	 * @param reviewer - the reviewer.
+	 */
+	public void removeReviewer(User reviewer) {
+		reviewers.remove(reviewer);
+		update();
+	}
+
+	/**
+	 * @return the subProgramChair
+	 */
+	public String getSubProgramChair() {
+		return subProgramChair;
+	}
+
+	/**
+	 * @param subProgramChair the subProgramChair to set
+	 */
+	public void setSubProgramChair(String subProgramChair) {
+		this.subProgramChair = subProgramChair;
+	}
+
+	/**
+	 * Notifies observers.
+	 */
+	public void update() {
+		setChanged();
+		notifyObservers(getFileSerialName());
+	}
+
+	/**
+	 * Gets the name for the serialized version of this file.
+	 * @return the serialized file name.
+	 */
+	public String getFileSerialName() {
+		return "P_" + this.getAuthor() + "_" + paper.getName() + ".ser";
+	}
+
+	/**
+	 * Status of the paper.
+	 * 
+	 * @return status of the paper.
+	 */
+	public String getStatus() {
+		return status;
+	}
+
+	/**
+	 * @param status the status to set
+	 */
+	public void setStatus(String status) {
+		this.status = status;
+	}
+}

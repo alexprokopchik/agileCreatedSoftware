@@ -1,0 +1,283 @@
+package view;
+
+import java.awt.Desktop;
+import java.awt.Dimension;
+import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.swing.JButton;
+import javax.swing.JFileChooser;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import javax.swing.SwingConstants;
+
+import controller.FileWriter;
+import controller.SerializableController;
+import model.Paper;
+import model.Review;
+import model.User;
+
+import java.awt.Font;
+import java.awt.Color;
+
+/**
+ * This method is the AuthorPaperPanel. The Panel that includes all of the buttons and actions within the Author Tab.
+ * @author Owen, Harmeet
+ * 
+ * Contributors: Alex, Harmeet
+ *
+ */
+@SuppressWarnings("serial")
+public class PaperPanel2 extends JPanel {
+	private static final Dimension SIZE = new Dimension(100, 26);
+
+	private static String REGEX = "[.][^.]+$"; // replaces the extension of a file. Found at StackOverflow question 924394
+	
+	private AuthorPanel parent;
+	private JButton viewPaperButton;
+	private JButton editPaperButton;
+	private JButton reviewPaperButton;
+	private JButton deletePaperButton;
+	private JTextField titleField;
+	private JTextArea abstractField;
+	private Paper paper;
+	private User user;
+	
+	/**
+	 * The constructor
+	 * 
+	 * @param parent The AuthorPanel
+	 * @param u The User
+	 * @param p The Paper
+	 */
+	public PaperPanel2(final AuthorPanel parent, final User u, final Paper p){
+		super();
+		this.parent = parent;
+		user = u;
+		paper = p;
+		viewPaperButton = new JButton("View Paper");
+		//viewPaperButton.setBorder(new LineBorder(BevelBorder.LOWERED, Color.YELLOW, Color.YELLOW, Color.YELLOW, Color.YELLOW));
+		editPaperButton = new JButton("Edit Paper");
+		//editPaperButton.setBorder(new BevelBorder(BevelBorder.LOWERED, Color.YELLOW, Color.YELLOW, Color.YELLOW, Color.YELLOW));
+		reviewPaperButton = new JButton("Reviews");
+		//reviewPaperButton.setBorder(new BevelBorder(BevelBorder.LOWERED, Color.YELLOW, Color.YELLOW, Color.YELLOW, Color.YELLOW));
+		deletePaperButton = new JButton("Delete Paper");
+		//deletePaperButton.setBorder(new BevelBorder(BevelBorder.LOWERED, Color.YELLOW, Color.YELLOW, Color.YELLOW, Color.YELLOW));
+
+		JLabel title = new JLabel();
+		title.setForeground(Color.YELLOW);
+		title.setFont(new Font("Tahoma", Font.BOLD, 11));
+		title.setHorizontalTextPosition(SwingConstants.CENTER);
+		title.setHorizontalAlignment(SwingConstants.CENTER);
+		title.setPreferredSize(new Dimension(SIZE));
+		title.setText(p.getTitle());
+		
+		JLabel status = new JLabel("In Review");
+		status.setForeground(Color.YELLOW);
+		status.setFont(new Font("Tahoma", Font.BOLD, 11));
+		status.setHorizontalTextPosition(SwingConstants.CENTER);
+		status.setHorizontalAlignment(SwingConstants.CENTER);
+		status.setPreferredSize(SIZE);
+		
+		viewPaperButton.setPreferredSize(SIZE);
+		editPaperButton.setPreferredSize(SIZE);
+		reviewPaperButton.setPreferredSize(SIZE);
+		deletePaperButton.setPreferredSize(SIZE);		
+		
+		addListeners();
+		
+		this.add(title);
+		this.add(status);
+		this.add(viewPaperButton);
+		this.add(editPaperButton);
+		this.add(reviewPaperButton);
+		this.add(deletePaperButton);
+		
+		String fileNameNoExt = paper.getPaper().getName().replaceFirst(REGEX, "");
+		File r = new File("papers\\" + String.valueOf((user.getConference().getConferenceId())) 
+				+ "\\" + paper.getAuthor() + "\\" + fileNameNoExt + "\\reviews"); 
+		 
+		
+		if (r.exists()) {
+			reviewPaperButton.setEnabled(true);
+		}
+		else {
+			reviewPaperButton.setEnabled(false);
+		}
+		
+		this.setPreferredSize(new Dimension(650, 50));
+		this.setMaximumSize(new Dimension(650, 50));
+	}
+	
+	private void addListeners() {
+		viewPaperButton.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				viewPaper();
+			}
+		});
+		
+		editPaperButton.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				submitPaper();
+			}
+		});
+		
+		reviewPaperButton.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				reviewPaper();
+			}
+		});
+		
+		deletePaperButton.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				deletePaper();
+			}
+		});
+		
+		
+	}
+	/**
+	 * The actual work performed to view a Paper with a paper viewing program.
+	 */
+	private void viewPaper(){
+			File path = paper.getPaper();
+			Desktop desktoptool = Desktop.getDesktop();
+			
+			try {
+				desktoptool.open(path);
+			} catch (IOException e) {
+				e.printStackTrace();
+				JOptionPane.showMessageDialog(this, "Error Viewing the File");
+			}
+	}
+	
+	/**
+	 * The actual work performed to pop out a JFrame to review a paper.
+	 */
+	private void reviewPaper() {
+		ViewReviewPanel view = new ViewReviewPanel(user, paper);
+		JFrame viewFrame = new JFrame();
+		viewFrame.add(view);
+//		reviewFrame.pack();
+		viewFrame.setExtendedState(java.awt.Frame.MAXIMIZED_BOTH);
+		viewFrame.setMinimumSize(new Dimension(400, 500));
+		viewFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		viewFrame.setVisible(true);
+		//this.add(view);
+//		Object[] possibilities = null;
+//		List<Review> reviewList = new ArrayList<Review>();
+//		reviewList = paper.getReviews();
+//		possibilities = new Object[reviewList.size()];
+//
+//		for (int k = 0; k < reviewList.size(); k++) {
+//			Review r = reviewList.get(k);
+//			possibilities[k] = r;
+//		}
+//		
+//		String chooseFile = null;
+//		while (chooseFile == null) {
+//			Object choice = JOptionPane.showInputDialog(null, "Choose a Review", "Reviews", JOptionPane.PLAIN_MESSAGE, null, possibilities, 0);
+//			if (choice == null) {
+//				break;
+//			} else {
+//				chooseFile = (String) choice;
+//			}
+//		}
+//		
+//		if (!(chooseFile == null)) {
+//			
+//			//TODO: Do something with choice
+//		}
+	}
+	
+	/**
+	 *  The work performed to upload and submit a paper as an Author. 
+	 */
+	private void submitPaper() {
+		final JFrame submitFrame = new JFrame("Upload Paper.");
+		JPanel submitPanel = new JPanel();
+		submitPanel.setLayout(new GridLayout(0, 2, 10, 10));
+		JLabel titleLabel = new JLabel("Paper Title:");
+		titleField  = new JTextField();
+		JLabel abstractLabel = new JLabel("Abstract:");
+		abstractField = new JTextArea();
+
+		JButton uploadButton = new JButton("Upload");
+		uploadButton.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				JFileChooser fc = new JFileChooser();
+				int returnVal = fc.showOpenDialog(null);
+				
+				if (returnVal == JFileChooser.APPROVE_OPTION) {
+					File f = fc.getSelectedFile();
+					FileWriter.writePaperFile(f, user);
+					Paper p = new Paper(f, user.getUserName(), user
+							.getConference());
+					//System.out.println("The title " + titleField.getText());
+					p.setTitle(titleField.getText().substring(0, Math.min(titleField.getText().length(), 16)));
+					p.setAbstract(abstractField.getText());
+					
+					user.removePaper(paper);
+					user.addPaper(p);
+					p.addObserver(new SerializableController());
+					p.update();
+					parent.getDB().actDatabase.update();
+					parent.getDB().conDatabase.update();
+					submitFrame.dispose();
+					parent.update();
+				}
+			}
+		});
+
+		submitPanel.add(titleLabel);
+		submitPanel.add(titleField);
+
+		submitPanel.add(abstractLabel);
+		submitPanel.add(abstractField);
+
+		submitPanel.add(uploadButton);
+
+		submitFrame.getContentPane().add(submitPanel);
+		submitFrame.pack();
+		submitFrame.setVisible(true);
+	}
+	
+	/**
+	 * The work performed to delete a Paper permanently from the database, as well as from the panel.
+	 */
+	private void deletePaper() {
+		if (JOptionPane.showConfirmDialog(this, "This is permanent. Are you sure you wish to delete?", "Delete Paper", JOptionPane.YES_NO_OPTION) == JOptionPane.OK_OPTION) {
+			user.removePaper(paper);
+			user.addObserver(new SerializableController());
+			user.update();
+			user.getConference().addObserver(new SerializableController());
+			user.getConference().removePaper(paper);
+			parent.getDB().conDatabase.addObserver(new SerializableController());
+			parent.getDB().actDatabase.addObserver(new SerializableController());
+			parent.getDB().conDatabase.update();
+			parent.getDB().actDatabase.update();
+			//TODO: remove from filesystem and update serial objects
+			parent.update();
+		}
+	}
+
+}

@@ -1,0 +1,24 @@
+package controller;
+
+import java.util.Observable;
+import java.util.Observer;
+
+/**
+ * Serializes the object on update.
+ * @author Janelle
+ * 
+ * Contributions: Owen
+ *
+ */
+public class SerializableController implements Observer{
+
+	public SerializableController() {
+		
+	}
+	@Override
+	public void update(Observable arg0, Object arg1) {
+		FileWriter.writeSerializable(arg0, (String) arg1);
+	}
+	
+
+}

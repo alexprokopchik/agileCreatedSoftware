@@ -1,0 +1,153 @@
+
+
+Requirements:
+
+User Stories:
+
+US01. As an Author, I want to submit a manuscript to a conference. - YES
+
+US02. As a Program Chair I want to designate a Subprogram Chair for a manuscript. 
+
+US03. As a Subprogram Chair, I want to assign a paper to reviewers. 
+
+US04. As a Reviewer, I want to view a list of manuscripts to which I have been assigned. 
+
+US05. As a Reviewer, I want to submit a review for a manuscript to which I have been assigned. 
+
+US06. As an Author I want to obtain the reviews for the manuscripts that I have submitted. 
+
+US07. As an Author, I want to make changes to my submission, including unsubmitting my manuscript. - YES
+
+US08. As a Subprogram Chair, I want to submit my recommendation for a paper. 
+
+US09. As a Program Chair, I want to view a list of all submitted manuscripts and the acceptance status 
+(yes/no/undecided) for each. 
+
+US10. As a Program Chair, I want to make an acceptance decision (yes or no) on a submitted manuscript. 
+
+US11. As a Program Chair, I want to see which papers are assigned to which Subprogram chairs. 
+
+US12. As a user, I want to log in. - YES
+
+Business Rules:
+
+BR01. New registrations are only setup by head office staff. - YES
+
+BR02. Only registered users can log in. - YES
+
+BR03. For each conference, only one user is designated the Program Chair. - YES
+
+BR04. The designated Program Chair is assigned to a new conference when it is first setup. - YES
+
+BR05. User roles are designated for a specific conference. In other words having a particular role for 
+conference X has no effect on the role or roles that this user has for conference Y. - YES
+
+BR06. A user can be designated as a Subprogram chair of a conference only if he or she is already a 
+Reviewer for the conference. - YES
+
+BR07. A particular user can carry out only those tasks for a conference related to the roles that he or she 
+is assigned for that conference. - YES
+
+BR08. A user becomes an Author only by submitting a manuscript. - YES
+
+BR09. A user can take on more than one role for a given conference.  - YES
+
+BR10. An Author cannot review his or her own paper. A Reviewer cannot review a paper that he or she 
+authored. - YES
+
+BR11. A Subprogram Chair cannot be designated for a paper that he or she authored. 
+
+BR12. A Reviewer can only access those manuscripts assigned to him or her. 
+
+BR13. A Reviewer can only access the reviews that he or she submits. 
+
+BR14. An Author can only access his or her submitted manuscripts and reviews for these manuscripts. 
+
+BR15. Only the Program/Subprogram Chair submitting the recommendation can access that 
+Subprogram Chair’s recommendation. 
+
+BR16. An Author can submit a maximum of 4 papers to any conference. - NO
+
+BR17. A Reviewer can be assigned to review a maximum of 4 papers to review. - NO
+
+BR18. A Subprogram Chair can be designated no more than 4 papers. - NO
+
+BR19. Authors can only access reviews after the program chair has made a decision.
+
+BR20. Only the Program Chair can see which Subprogram Chairs have been designated for which papers. 
+
+BR21. Only the Program Chair and the Subprogram Chair designated for a particular paper can see which 
+Reviewers have been assigned to review that paper. 
+
+BR22. All paper submissions must be made on or before the submission deadline. - NO
+
+
+Information Needed to Run:
+
+run the jar file with database.txt in the same directory. All information will be stored inside folders created in the same directory.
+
+Information for JUnit run:
+
+Inside the test package, AllTests.java is a JUnit Test Suite for all of our JUnit tests. Running it will run all our tests at once.
+
+Contribution table:
+
+Owen 		|    DatabaseConstructor	|	coding
+Owen 		|    	FileWriter			|	coding
+Owen 		|    	Main				|	coding
+Owen 		|   SerializableController	|	editing
+Owen 		|    	Account				|	editing
+Owen		|    	AccountDatabase		|	editing
+Owen		|    	Conference			|	editing
+Owen		|    ConferenceDatabase		|	coding
+Owen		|    	Paper				|	editing
+Owen		|    	Session				|	coding
+Owen		|    	User				|	coding
+Owen		|    	AuthorPanel			|	coding
+Owen		|    	PaperPanel2			|	coding
+Owen		|    	WindowPanelTest		|	coding
+
+Harmeet		|    DatabaseConstructor	|	coding
+Harmeet		|    	Account				|	coding
+Harmeet		|    	AccountDatabase		|	coding
+Harmeet		|    	Recommendation		|	coding
+Harmeet		|    	Review				|	editing
+Harmeet		|    	Session				|	editing
+Harmeet		|    	User				|	editing
+Harmeet		|    	BackgroundImage		|	coding
+Harmeet		|    	FinalReviewPanel	|	coding
+Harmeet		|    	AuthorPanel			|	coding
+Harmeet		|    	PaperPanel2			|	coding
+Harmeet		|    	PCPaperPanel		|	coding
+Harmeet		|    	ProgramChairPanel	|	coding
+Harmeet		|    	ReviewPaperPanel	|	coding
+Harmeet		|    	SessionPanel		|	coding
+Harmeet		|    SubprogramChairPanel	|	coding
+Harmeet		|    SubprogramPaperPanel	|	coding
+Harmeet		|    	WindowPanelTest		|	coding
+
+Alex		|    DatabaseConstructor	|	coding
+Alex 		|    	Account				|	editing
+Alex		|    	AccountDatabase		|	editing
+Alex		|    	Conference			|	coding
+Alex		|    	Paper				|	editing
+Alex		|    	Review				|	coding
+Alex		|    	MarqueePanel		|	coding
+Alex		|    	AuthorPanel			|	editing
+Alex		|    	PaperPanel2			|	Editing
+Alex		|    	WindowPanelTest		|	coding
+
+Janelle		|    DatabaseConstructor	|	coding
+Janelle		|    	Account				|	coding
+Janelle		|    	AccountDatabase		|	editing
+Janelle		|    	Conference			|	editing
+Janelle		|    ConferenceDatabase		|	editing
+Janelle		|    	Paper				|	coding
+Janelle		|    	Recommendation		|	editing
+Janelle		|    	Review				|	coding
+Janelle		|    	User				|	editing
+Janelle		|    	AuthorPanel			|	coding
+Janelle		|    RecommendationPanel	|	coding
+Janelle		|    	ReviewPanel			|	coding
+
+Emergency Contact Information:

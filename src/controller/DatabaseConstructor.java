@@ -1,0 +1,199 @@
+
+package controller;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.Scanner;
+
+import model.Account;
+import model.AccountDatabase;
+import model.Conference;
+import model.ConferenceDatabase;
+import model.User;
+
+/**
+ * Class to read data file and construct our databases for further use in the code.
+ * @author Owen, Janelle, Alex, Harmeet
+ *
+ */
+//TODO: Change data file so RoleID matches our numbering
+public class DatabaseConstructor {
+	private SerializableController sc;
+	public AccountDatabase actDatabase; // used for testing
+	public ConferenceDatabase conDatabase; // used for testing
+	private String[] values = new String[]{"0", "", "", "", "0", "", "", "0", ""};
+	private int roleId;
+	
+	public void createDatabases(File data) throws FileNotFoundException {
+		sc = new SerializableController();
+		Scanner scan = new Scanner(data);
+		
+		if (checkDatabase()) { // loads database if has, if not creates
+			
+		} else {
+
+			scan.nextLine(); // Discard first line.
+
+			while (scan.hasNext()) {
+				// parses the file line by line
+				String line = scan.nextLine();
+				String[] svalues = line.split(",");
+				int j = 0;
+				for (int i = 0; i < svalues.length; i++) {
+
+					String val = svalues[i];
+					if (val.endsWith("\"")) {
+						val = val.substring(0, val.length() - 1);
+					}
+
+					if (val.startsWith("\"")) {
+						val = val.substring(1, val.length());
+					}
+
+					if (val.startsWith(" ")) {
+						j--;
+						val = values[j] + "," + val;
+					}
+
+					values[j] = val;
+					j++;
+				}
+
+				/*
+				 * UserId,First,Last,email,conferceId,ConferenceTitle,
+				 * ConferenceDescription,RoleId,Role
+				 */
+				int id = Integer.parseInt(values[0]);
+				String first = values[1];
+				String last = values[2];
+				String email = values[3];
+				int conId = Integer.parseInt(values[4]);
+				String conTitle = values[5];
+				String conDescription = values[6];
+//				roleId = Integer.parseInt(values[7]);
+				int roleNumber = Integer.parseInt(values[7]);
+				if (roleNumber == 1) {
+					roleId = 8;
+				}
+				else if (roleNumber == 2) {
+					roleId = 4;
+				}
+				else if (roleNumber == 3) {
+					roleId = 1;
+				}
+				else if (roleNumber == 4) {
+					roleId = 2;
+				}
+				String role = values[8];
+
+				// Same email
+				if (actDatabase.containsAccount(email)) { // same email
+					Account act = actDatabase.getAccounts().get(email);
+					// deserializes the account
+					User u = act.getUserConfId(conId); // checks conference
+
+					if (u != null) { // same conference but different role
+						Conference c = conDatabase.getConferences().get(conId);
+						if(roleId == User.REVIEWER) {
+							c.addReviewer(u);
+						} else if(roleId == User.SUBPROGRAM_CHAIR) {
+							c.addSubprogramChairs(u);
+						}
+						c.addUser(u);
+						// u.addObserver(sc);
+						// deserializes the user
+						// System.out.println(u.getPaper());
+						u.setPermssions(roleId | u.getPermissions());
+						act.setPermissions(roleId | act.getPermissions());
+						actDatabase.update();
+						conDatabase.update();
+					} else { // new conference
+						Conference con = new Conference();
+						con.setConferenceId(conId);
+						con.setConferenceTitle(conTitle);
+						con.addObserver(sc);
+						con.setConferenceDescription(conDescription);
+
+						if (!conDatabase.containsConference(conId)) {
+							conDatabase.add(con);
+						}
+
+						System.out.println("Creating new User for " + email);
+
+						User user = new User(email, roleId, con);
+						user.addObserver(sc);
+						user.update();
+						act.setPermissions(roleId | act.getPermissions());
+						act.addUser(user);
+						if(roleId == User.REVIEWER) {
+							con.addReviewer(user);
+						} else if(roleId == User.SUBPROGRAM_CHAIR) {
+							con.addSubprogramChairs(user);
+						}
+						con.addUser(user);
+						conDatabase.update();
+					}
+				} else { // different email so new user
+					Conference con;
+					if (conDatabase.containsConference(conId)) {
+						 con = conDatabase.getConferences().get(conId);
+					} else {
+						System.out.println("Creating a new conference");
+						con = new Conference();
+						con.setConferenceId(conId);
+						con.setConferenceTitle(conTitle);
+						con.addObserver(sc);
+						con.setConferenceDescription(conDescription);
+					}
+					if (!conDatabase.containsConference(conId)) {
+						conDatabase.add(con);
+					}
+					// System.out.println("Creating new User");
+					User user = new User(email, roleId, con);
+					user.addObserver(sc);
+					user.update();
+					// set values for User
+					Account act = new Account();
+					act.setEmail(email);
+					act.addObserver(sc);
+					act.setUserID(id);
+					act.setFirstName(first);
+					act.setLastName(last);
+					act.addUser(user);
+					act.setPermissions(roleId);
+					actDatabase.add(act);
+					if(roleId == User.REVIEWER) {
+						con.addReviewer(user);
+					} else if(roleId == User.SUBPROGRAM_CHAIR) {
+						con.addSubprogramChairs(user);
+					}
+					con.addUser(user);
+					conDatabase.update();
+				}
+			}
+		}
+		scan.close();
+	}
+	
+	/**
+	 * Loads database if has, if not creates
+	 * @return boolean if database exists or not
+	 */
+	private boolean checkDatabase() {
+		try {
+			actDatabase = (AccountDatabase) FileWriter.deSerializable("AccountDatabase.ser");
+			conDatabase = (ConferenceDatabase) FileWriter.deSerializable("ConferenceDatabase.ser");
+			System.out.println("Loaded Database");
+			return true;
+		} catch (FileNotFoundException e) {
+			System.out.println("Account Database not found");
+			
+			actDatabase = new AccountDatabase();
+			actDatabase.addObserver(sc);
+			conDatabase = new ConferenceDatabase();
+			conDatabase.addObserver(sc);
+			conDatabase.update();
+			return false;
+		}
+	}
+}

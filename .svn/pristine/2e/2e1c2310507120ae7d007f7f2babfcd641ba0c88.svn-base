@@ -1,0 +1,147 @@
+package view;
+
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.io.File;
+import java.io.IOException;
+import java.util.Observable;
+import java.util.Observer;
+
+import javax.imageio.ImageIO;
+import javax.swing.ImageIcon;
+import javax.swing.JFrame;
+import javax.swing.JTabbedPane;
+import javax.swing.JTextField;
+import javax.swing.SwingConstants;
+
+import model.Conference;
+import model.Paper;
+import model.Session;
+import model.User;
+import controller.DatabaseConstructor;
+import controller.SerializableController;
+
+public class WindowBuilderTest implements Observer {
+
+	private JFrame frmTest;
+	private JTextField txtQuestions;
+//	private Review review = new Review();
+//	private Recommendation recommendation;	
+	private DatabaseConstructor dbCon;
+	private Session session;
+	private SessionPanel sessionPanel;
+	private User user;
+	private Color background;
+	private AuthorPanel authorPanel;
+	private ProgramChairPanel programChairPanel;
+
+	/**
+	 * Create the application.
+	 */
+	public WindowBuilderTest(final DatabaseConstructor dbc) {
+//		recommendation = new Recommendation();
+		dbCon = dbc;
+		dbCon.actDatabase.addObserver(new SerializableController());
+		dbCon.conDatabase.addObserver(new SerializableController());
+		background = new Color(0,51,102);
+		session = new Session(dbCon);
+		sessionPanel = new SessionPanel(session, dbCon, frmTest);
+		sessionPanel.addObserver(this);
+
+		initialize();
+	}
+
+	/**
+	 * Initialize the contents of the frame.
+	 */
+	private void initialize() {
+		frmTest = new JFrame();
+		frmTest.getContentPane().setForeground(new Color(0, 51, 102));
+		frmTest.setTitle("Tornado Commando Squad");
+		frmTest.setResizable(false);
+		frmTest.setMinimumSize(new Dimension(600, 500));
+		frmTest.setMaximumSize(new Dimension(600, 500));
+		frmTest.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);		
+		frmTest.setLocationRelativeTo(null);
+		frmTest.getContentPane().add(sessionPanel.getPanel());
+		frmTest.setVisible(true);
+		frmTest.getContentPane().setBackground(background); //Top Color------
+	}
+
+	private void tabs(final User user) {
+		int perm = user.getPermissions();
+		
+		//Scrolling Marquee----------------
+		final MarqueePanel mp = new MarqueePanel("Logged in as " + user.getUserName() + " for conference " + user.getConference().getConferenceTitle(), (frmTest.getWidth()/2));
+		frmTest.getContentPane().add(mp, BorderLayout.NORTH);
+		mp.start();
+		//Scrolling Marquee-------------
+
+		//Image as background------------------------
+		ImageIcon image = new ImageIcon("");;
+		try {
+			image = new ImageIcon(ImageIO.read(new File("image//welcome.png")));
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
+		BackgroundImage bReviewer = new BackgroundImage(image.getImage());
+		BackgroundImage bAuthor = new BackgroundImage(image.getImage());
+		BackgroundImage bSubprogram = new BackgroundImage(image.getImage());
+		BackgroundImage bProgram = new BackgroundImage(image.getImage());
+		//Image as background-------------------
+		
+		FinalReviewPanel reviewerPanel = new FinalReviewPanel(user, dbCon);
+		reviewerPanel.setOpaque(false);
+		
+		SubprogramChairPanel subprogramChairPanel = new SubprogramChairPanel(user, dbCon);
+		subprogramChairPanel.setOpaque(false);
+		
+		programChairPanel = new ProgramChairPanel(user, dbCon.actDatabase, dbCon.conDatabase, subprogramChairPanel);
+		programChairPanel.setOpaque(false);
+		
+		authorPanel = new AuthorPanel(user, dbCon, reviewerPanel, programChairPanel);
+		authorPanel.setOpaque(false);
+		
+		bAuthor.add(authorPanel);
+		bReviewer.add(reviewerPanel);
+		bSubprogram.add(subprogramChairPanel);
+		bProgram.add(programChairPanel);
+		
+		
+		JTabbedPane tabbedPane = new JTabbedPane(SwingConstants.TOP);
+		tabbedPane.setBackground(Color.YELLOW);
+		tabbedPane.setForeground(Color.BLUE);
+		
+		frmTest.getContentPane().add(tabbedPane, BorderLayout.CENTER);
+		
+		
+		tabbedPane.addTab("Author", null, bAuthor, null);
+		tabbedPane.addTab("Reviewer", null, bReviewer, null);
+		tabbedPane.addTab("Subprogram Chair", null, bSubprogram, null);
+		tabbedPane.addTab("Program Chair", null, bProgram, null);	
+//		tabbedPane.addTab("TESTREVIEW", null, new ViewReviewPanel(user, new Paper(new File("papers\\1\\asdf\\9.94r"), "asdf", new Conference())));
+		tabbedPane.addTab("AR TEST", null, new AcceptancePanel());
+		if((perm & User.REVIEWER) != User.REVIEWER) {
+			tabbedPane.setEnabledAt(1, false);
+		}
+		if((perm & User.SUBPROGRAM_CHAIR) != User.SUBPROGRAM_CHAIR) {
+			tabbedPane.setEnabledAt(2, false);
+		}
+		if((perm & User.PROGRAM_CHAIR) != User.PROGRAM_CHAIR) {
+			tabbedPane.setEnabledAt(3, false);
+		}		
+		
+		frmTest.remove(sessionPanel.getPanel());
+		frmTest.setResizable(true);
+		frmTest.setMinimumSize(new Dimension(570, 600));
+		frmTest.repaint();
+		frmTest.pack();
+	}
+	
+	@Override
+	public void update(Observable arg0, Object theUser) {
+		user = (User) theUser;
+		tabs(user);
+	}
+}

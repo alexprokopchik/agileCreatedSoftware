@@ -1,0 +1,213 @@
+package view;
+
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.File;
+
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JFileChooser;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import javax.swing.border.BevelBorder;
+
+import model.Paper;
+import model.User;
+import controller.DatabaseConstructor;
+import controller.FileWriter;
+import controller.SerializableController;
+
+/**
+ * Panel for the author tab.
+ * @author Owen, Harmeet, Janelle
+ * 
+ * Contributors: Alex
+ *
+ */
+@SuppressWarnings("serial")
+public class AuthorPanel extends JPanel {
+	private static final Dimension SIZE = new Dimension(100, 26);
+	private User user;
+	private JButton submitButton;
+	private DatabaseConstructor dbCon;
+	private FinalReviewPanel reviewerPanel;
+	private ProgramChairPanel pcPanel;
+	
+	public AuthorPanel(final User theUser, final DatabaseConstructor dbcon,
+			final FinalReviewPanel theReviewerPanel,
+			final ProgramChairPanel thePCPanel) {
+		super();
+		user = theUser;
+		dbCon = dbcon;
+		submitButton = new JButton("Submit new Paper");
+		this.setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
+		this.setPreferredSize(new Dimension(800, 500));
+		reviewerPanel = theReviewerPanel;
+		pcPanel = thePCPanel;
+
+		addListeners();
+		 update();
+	}
+
+	private void addListeners() {
+		submitButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				submit();
+			}
+		});
+	}
+
+	private void submit() {
+
+		final JFrame submitFrame = new JFrame("Submit a Paper.");
+		JPanel submitPanel = new JPanel();
+		submitPanel.setLayout(new GridLayout(0, 2, 10, 10));
+		JLabel titleLabel = new JLabel("Paper Title:");
+		final JTextField titleField = new JTextField("Paper Title");
+		JLabel abstractLabel = new JLabel("Abstract:");
+		final JTextArea abstractField = new JTextArea("Enter Abstract here!");
+
+		JButton uploadButton = new JButton("Upload");
+		uploadButton.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				JFileChooser fc = new JFileChooser();
+				int returnVal = fc.showOpenDialog(null);
+
+				if (returnVal == JFileChooser.APPROVE_OPTION) {
+					File f = fc.getSelectedFile();
+					FileWriter.writePaperFile(f, user);
+					Paper p = new Paper(f, user.getUserName(), user
+							.getConference());
+					if (user.getConference().getPapers().contains(p)) {
+						JOptionPane
+								.showMessageDialog(null,
+										"This paper already exist within this conference");
+					}
+					user.addPaper(p);
+					user.getConference().addObserver(
+							new SerializableController());
+					user.getConference().update();
+					p.setTitle(titleField.getText().substring(0,
+							Math.min(titleField.getText().length(), 16)));
+					p.setAbstract(abstractField.getText());
+					p.addObserver(new SerializableController());
+					p.update();
+					System.out.println("Paper DB = " + dbCon.conDatabase.getConferences().get(user.getConference().getConferenceId()).getPaperDB().size());
+						//	getConference().getPaperDB().values().size());
+					//System.out.println(dbCon.conDatabase.getConferences().get(user.getConference().getConferenceId()).getPapers().size());
+					dbCon.conDatabase.getConferences()
+							.get(user.getConference().getConferenceId())
+							.addPaper(p);
+					dbCon.actDatabase.update();
+					dbCon.conDatabase.update();
+					System.out.println("Paper DB = " + user.getConference().getPaperDB().values().size());
+					//System.out.println(dbCon.conDatabase.getConferences().get(user.getConference().getConferenceId()).getPapers().size());
+					submitFrame.dispose();
+					 update();
+				}
+			}
+		});
+
+		submitPanel.add(titleLabel);
+		submitPanel.add(titleField);
+
+		submitPanel.add(abstractLabel);
+		submitPanel.add(abstractField);
+
+		submitPanel.add(uploadButton);
+
+		submitFrame.getContentPane().add(submitPanel);
+		submitFrame.pack();
+		submitFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		submitFrame.setVisible(true);
+	}
+
+	
+
+	public void update() {
+		this.removeAll();
+		JPanel tpanel = new JPanel();
+		tpanel.setOpaque(false);
+		tpanel.setPreferredSize(new Dimension(800, 50));
+		tpanel.setMaximumSize(new Dimension(800, 50));
+
+		JButton ptitle = new JButton("Paper Title\t");
+		ptitle.setEnabled(false);
+		ptitle.setOpaque(false);
+		ptitle.setForeground(Color.BLACK);
+		ptitle.setSize(new Dimension(120, 100));
+		ptitle.setPreferredSize(new Dimension(120, 26));
+		
+		JButton status = new JButton("Status");
+		status.setPreferredSize(SIZE);
+		status.setEnabled(false);
+		status.setOpaque(false);
+		
+		JButton view = new JButton("View");
+		view.setPreferredSize(SIZE);
+		view.setEnabled(false);
+		view.setOpaque(false);
+		
+		JButton edit = new JButton("Edit");
+		edit.setPreferredSize(SIZE);
+		edit.setEnabled(false);
+		edit.setOpaque(false);
+		
+		JButton reviews = new JButton("Reviews");
+		reviews.setEnabled(false);
+		reviews.setOpaque(false);
+		reviews.setSize(SIZE);
+		
+		JButton srev = new JButton("Delete");
+		srev.setPreferredSize(SIZE);
+		srev.setEnabled(false);
+		srev.setOpaque(false);
+
+		tpanel.add(ptitle);		
+		tpanel.add(status);
+		tpanel.add(view);		
+		tpanel.add(edit);
+		tpanel.add(reviews);
+		tpanel.add(srev);
+
+		tpanel.setAlignmentX(CENTER_ALIGNMENT);
+
+		this.add(tpanel);
+
+		for (Paper p : user.getPaper()) {
+			if (p.getAuthor().equals(user.getUserName())) {
+				PaperPanel2 pp = new PaperPanel2(this, user, p);
+				pp.setOpaque(false);
+				pp.setAlignmentX(CENTER_ALIGNMENT);
+				this.add(pp);
+			}
+
+			reviewerPanel.update();
+			pcPanel.addAllComponents();
+		}
+
+		 reviewerPanel.update();
+		 pcPanel.addAllComponents();
+		submitButton.setAlignmentX(Component.RIGHT_ALIGNMENT);
+		submitButton.setBorder(new BevelBorder(BevelBorder.LOWERED,
+				Color.YELLOW, Color.YELLOW, Color.YELLOW, Color.YELLOW));
+		this.add(submitButton);
+		this.validate();
+		this.repaint();
+	}
+
+	public DatabaseConstructor getDB() {
+		return dbCon;
+	}
+}

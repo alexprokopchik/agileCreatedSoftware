@@ -1,0 +1,147 @@
+package view;
+
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Observable;
+
+import javax.imageio.ImageIO;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.border.BevelBorder;
+
+import model.Conference;
+import model.Session;
+import controller.DatabaseConstructor;
+
+/**
+ * The login panel that initializes the program
+ * @author Alex, Harmeet, Janelle, Owen
+ *
+ */
+public class SessionPanel extends Observable {
+	
+	private Session session;
+	private DatabaseConstructor dbConf;
+	private int confNumber;
+	private JPanel panel;
+	
+	/**
+	 * The constructor for the SessionPanel that adds the login button as well as the visuals
+	 * @param theSession The Session
+	 * @param theDbconf The Database Constructor
+	 * @param frmTest The frmTest
+	 */
+	public SessionPanel(final Session theSession,
+			final DatabaseConstructor theDbconf, JFrame frmTest) {
+		session = theSession;
+		dbConf = theDbconf;
+		
+		
+		JButton login = new JButton("Login");
+		login.setFont(new Font("Times New Roman", Font.BOLD, 25));
+		login.setBounds(235, 217, 105, 41);
+		login.setBorder(new BevelBorder(BevelBorder.RAISED, Color.YELLOW, Color.YELLOW, Color.YELLOW, Color.YELLOW));
+		login.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				initialize();
+			}
+		});		
+		
+		ImageIcon image = new ImageIcon("");;
+		try {
+			image = new ImageIcon(ImageIO.read(new File("image//welcometxt.png")));
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
+		panel = new BackgroundImage(image.getImage());
+		panel.setBorder(new BevelBorder(BevelBorder.RAISED, Color.YELLOW, Color.YELLOW, Color.YELLOW, Color.YELLOW));
+		panel.setLayout(null);
+		panel.add(login, BorderLayout.CENTER);
+		panel.setLayout(new BorderLayout());
+		JButton btnDesigners = new JButton("About Us");
+		btnDesigners.setBorder(new BevelBorder(BevelBorder.RAISED, Color.YELLOW, null, null, null));
+		btnDesigners.addActionListener(new ActionListener() {
+			/**
+			 * The groups information.
+			 */
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				
+				JOptionPane.showMessageDialog(null, "Designed By Tornado Commando Squad \n\n"
+		                                                       + "For Spring 2014 TCSS 360\n\n"
+		                                                       + "Members :\n\n"
+		                                                       + "    	    Owen Meaker\n\n"
+		                                                       + "    	    Alex Prokopchik\n\n"
+		                                                       + "    	    Janelle Tin\n\n"
+		                                                       + "    	    Harmeet Singh\n\n"
+		                                                       + "Contact Email: Tcs360@u.washington.edu\n\n"
+		                                                       + "Website: https://code.google.com/p/tcss360-assignment1/", "CONTACT US",
+		                                              JOptionPane.INFORMATION_MESSAGE);
+		            }
+		        });
+		btnDesigners.setBounds(0, 277, 89, 23);
+		panel.add(btnDesigners, BorderLayout.SOUTH);
+	}
+
+	/**
+	 * The action that is performed after the login button is pressed.
+	 */
+	private void initialize() {
+		String email = "";
+		
+		while (!session.ifValidemail(email)) {
+			email = JOptionPane.showInputDialog(null,
+					"Please Enter Your Email!", "Email");
+			if (email == null) {
+				email = "";
+				break;
+			}
+		}
+		if (!email.equals("") && !email.equals(null)) {
+			List<Conference> confList = dbConf.actDatabase.getAccounts()
+					.get(email).getConference();
+			Object[] possibilities = new Object[confList.size()];
+			Map<String, Integer> newMap = new HashMap<String, Integer>();
+			for (int k = 0; k < confList.size(); k++) {
+				possibilities[k] = confList.get(k).getConferenceTitle();				
+				newMap.put(confList.get(k).getConferenceTitle(), confList.get(k).getConferenceId());
+			}
+			int confNUm = 0;
+
+			while (confNUm == 0) {
+				Object choice = JOptionPane.showInputDialog(null, "Choose a conference?", "Conference", JOptionPane.PLAIN_MESSAGE, null, possibilities, 0);
+				if (choice == null) {
+					break;
+				} else {
+					confNUm =  newMap.get(choice);
+				}
+			}
+			if(confNUm > 0) {
+			setChanged();
+			notifyObservers(dbConf.actDatabase.getUser(dbConf.actDatabase.getAccounts().get(email), confNUm));
+			}
+		}
+	}
+	
+	/**
+	 * Returns the login panel
+	 * @return panel
+	 */
+	public JPanel getPanel() {
+		return panel;
+	}	
+}
+

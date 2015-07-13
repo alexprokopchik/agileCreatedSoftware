@@ -1,0 +1,96 @@
+package view;
+
+import java.awt.Dimension;
+
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JPanel;
+
+import model.Paper;
+import model.User;
+import controller.DatabaseConstructor;
+
+/**
+ * Used by reviewer panel and displays each column name of the table.
+ * @author Harmeet Singh.
+ *
+ */
+@SuppressWarnings("serial")
+public class FinalReviewPanel extends JPanel {
+	private User user;
+	private DatabaseConstructor dbCon;
+	
+	/**
+	 * The constructor for the Final Review Panel
+	 * @param theUser
+	 * @param dbcon
+	 */
+	public FinalReviewPanel(final User theUser, final DatabaseConstructor dbcon){
+		super();
+		
+		user = theUser;
+		dbCon = dbcon;
+		
+		this.setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
+		
+		update();
+	}
+	
+	/**
+	 * Updates all panels to display the correct information.
+	 */
+	public void update() {
+		this.removeAll();	
+		JPanel tpanel = new JPanel();
+		tpanel.setOpaque(false);
+		tpanel.setPreferredSize(new Dimension(600, 50));
+		tpanel.setMaximumSize(new Dimension(600, 50));
+		
+		JButton ptitle = new JButton("Paper Title\t");
+		ptitle.setEnabled(false);
+		ptitle.setOpaque(false);
+		ptitle.setPreferredSize(new Dimension(100, 26));
+		
+		JButton pconf = new JButton("Conference");
+		pconf.setEnabled(false);
+		pconf.setOpaque(false);
+		pconf.setPreferredSize(new Dimension(100, 26));
+		
+		JButton status = new JButton("Status");
+		status.setPreferredSize(new Dimension(100, 26));
+		status.setEnabled(false);
+		status.setOpaque(false);
+		
+		JButton view = new JButton("View");
+		view.setPreferredSize(new Dimension(100, 26));
+		view.setEnabled(false);
+		view.setOpaque(false);
+		
+		JButton srev = new JButton("Submit Review");
+		srev.setPreferredSize(new Dimension(150, 26));
+		srev.setEnabled(false);
+		srev.setOpaque(false);
+		
+		tpanel.add(ptitle);
+		tpanel.add(pconf);
+		tpanel.add(status);
+		tpanel.add(view);
+		tpanel.add(srev);
+		
+		tpanel.setAlignmentX(CENTER_ALIGNMENT);
+		this.add(tpanel);
+		
+		if (user != null) {
+		for (Paper p : user.getPaper()) {
+			if(p.getAuthor().equals(user.getUserName())) { 
+				System.out.println("Put a not equal, so if the reviewer is same as author paper doesnt show!");
+			ReviewerPaperPanel panel = new ReviewerPaperPanel(this, user, p);
+			panel.setAlignmentX(CENTER_ALIGNMENT);
+			this.add(panel);
+			}
+		}
+		}
+		this.validate();
+		this.repaint();
+	}
+}
